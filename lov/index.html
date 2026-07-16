@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real 3D Heart Path Animation</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      perspective: 1000px;
+    }
+
+    #ui {
+      position: relative;
+      width: 0;
+      height: 0;
+      transform-style: preserve-3d;
+      /* გასწორდა გადახრა: გული ახლა არის იდეალურად პროპორციული და ცენტრში */
+      transform: rotateX(0deg) rotateY(0deg);
+    }
+
+    .love_word {
+      position: absolute;
+      color: #ea80b0;
+      font-size: 1.4rem;
+      font-family: 'Arial', sans-serif;
+      font-weight: bold;
+      /* ტექსტის ზუსტი განლაგება და დახრა */
+      transform: translate(-50%, -50%) rotateZ(-30deg);
+      text-shadow: 0 0 10px #fff, 0 0 20px #ea80b0;
+      letter-spacing: 2px;
+      white-space: nowrap;
+      will-change: transform;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="ui"></div>
+
+  <script>
+    const ui = document.getElementById('ui');
+    const totalWords = 40; // ტექსტების რაოდენობა
+    const wordsArray = [];
+
+    // ვქმნით ტექსტის ელემენტებს და ვამატებთ DOM-ში
+    for (let i = 0; i < totalWords; i++) {
+      const el = document.createElement('div');
+      el.classList.add('love_word');
+      el.innerText = 'I love you';
+      ui.appendChild(el);
+      
+      wordsArray.push({
+        element: el,
+        offset: i / totalWords // საწყისი განაწილება გულის ტრაექტორიაზე
+      });
+    }
+
+    let progress = 0;
+    // საგრძნობლად შევანელე სიჩქარე, რათა ზუსტად ისეთივე მშვიდი სრიალი გამოვიდეს, როგორიც ვიდეოშია
+    const speed = 0.0008; 
+
+    function animate() {
+      progress += speed;
+
+      wordsArray.forEach((word) => {
+        // მიმდინარე პოზიცია
+        let currentPos = (word.offset + progress) % 1;
+        
+        let angle = currentPos * Math.PI * 2;
+
+        // მათემატიკური ფორმულა, რომელიც იდეალურ სიმეტრიულ გულს ხატავს
+        let x = 16 * Math.pow(Math.sin(angle), 3) * 15;
+        let y = -(13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)) * 15;
+        
+        // Z-ღერძის სიღრმე (ოდნავ შემცირებულია უფრო ბუნებრივი 3D ეფექტისთვის)
+        let z = Math.sin(angle) * 80; 
+
+        // ვსვამთ ელემენტს თავის კოორდინატებზე
+        word.element.style.transform = `translate3d(${x}px, ${y}px, ${z}px) translate(-50%, -50%) rotateZ(-30deg)`;
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
