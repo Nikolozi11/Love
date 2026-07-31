@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>For My Universe ✨❤️</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #020005;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      z-index: 2;
+      color: #ffffff;
+      font-size: 26px;
+      font-weight: 300;
+      letter-spacing: 3px;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.5s ease, transform 1.5s ease;
+      text-shadow: 0 0 15px #ff0055, 0 0 30px #ff0077, 0 0 45px #ff00aa;
+    }
+
+    .message.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="message" id="msg">You are the center of my universe ❤️</div>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const msg = document.getElementById('msg');
+
+    let width, height;
+    let particles = [];
+    let isHeartFormed = false;
+    let time = 0;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // გულის მათემატიკური წერტილები
+    function getHeartPoint(t) {
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+      return { x, y };
+    }
+
+    const isMobile = window.innerWidth < 600;
+    const particleCount = isMobile ? 1200 : 2200;
+
+    // 1. ნაწილაკების ინიციალიზაცია (კოსმოსი)
+    for (let i = 0; i < particleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const point = getHeartPoint(angle);
+
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 1.5,
+        vy: (Math.random() - 0.5) * 1.5,
+
+        targetX: point.x,
+        targetY: point.y,
+        z: (Math.random() - 0.5) * 30,
+
+        size: Math.random() * 2 + 0.8,
+        color: `hsl(${320 + Math.random() * 50}, 100%, ${65 + Math.random() * 25}%)`,
+        alpha: Math.random() * 0.7 + 0.3
+      });
+    }
+
+    // 2. ავტომატური ტაიმერი: 3000 მილიწამში (3 წამში) იწყება გულის აწყობა
+    setTimeout(() => {
+      isHeartFormed = true;
+      setTimeout(() => msg.classList.add('show'), 1200); // 1.2 წამში ჩნდება ტექსტიც
+    }, 3000); // <- აქ შეგიძლია შეცვალო წამები (მაგ. 2000 = 2 წამი, 5000 = 5 წამი)
+
+    // 3. ანიმაციის ციკლი
+    function animate() {
+      time += 0.02;
+      ctx.fillStyle = 'rgba(2, 0, 5, 0.2)';
+      ctx.fillRect(0, 0, width, height);
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const baseScale = Math.min(width, height) / (isMobile ? 38 : 30);
+      const pulse = 1 + Math.sin(time * 3) * 0.08;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+
+        if (isHeartFormed) {
+          const scale = baseScale * pulse;
+          const destX = centerX + p.targetX * scale + Math.sin(time + p.z) * 4;
+          const destY = centerY + p.targetY * scale + Math.cos(time + p.z) * 4;
+
+          p.x += (destX - p.x) * 0.05;
+          p.y += (destY - p.y) * 0.05;
+        } else {
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = p.color;
+        ctx.fill();
+      }
+
+      ctx.shadowBlur = 0;
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
